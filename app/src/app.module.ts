@@ -5,10 +5,15 @@ import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { UsersModule } from './users/users.module';
 import { BlogModule } from './blog/blog.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [AuthModule, AdminModule, UsersModule, BlogModule],
+  imports: [ ConfigModule.forRoot({
+    isGlobal:true, envFilePath:'.env',
+  }),
+    AuthModule, AdminModule, UsersModule, BlogModule],
   controllers: [AppController],
   providers: [AppService],
+  
 })
 export class AppModule {}

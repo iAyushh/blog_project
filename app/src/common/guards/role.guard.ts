@@ -1,29 +1,31 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { SetMetadata } from '@nestjs/common';
-import { UserType } from '@Common';
-
-export const Roles = (...roles: UserType[]) => SetMetadata('roles', roles);
+import { Observable } from 'rxjs';
+import { ROLES_KEY } from '../decorators';
+import { AuthenticatedRequest } from '../types';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private readonly reflector: Reflector) {}
+  constructor(private reflector: Reflector) {}
 
-  canActivate(context: ExecutionContext): boolean {
-    // Get the roles required
-    const roles = this.reflector.getAllAndOverride<string[]>('roles', [
+  canActivate(
+    context: ExecutionContext,
+  ): boolean | Promise<boolean> | Observable<boolean> {
+    const requiredRoles = this.reflector.getAllAndOverride(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
-    if (!roles) {
-      return false;
-    }
-    const request = context.switchToHttp().getRequest();
-    if (!request.user.type) return false;
-    return this.validateRoles(roles, request.user.type);
-  }
 
-  validateRoles(roles: string[], userRole: string) {
-    return roles.some((role) => userRole.toLowerCase() === role.toLowerCase());
+    if (!requiredRoles) {
+      return true;
+    }
+
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+
+    const user = request.user;
+
+    if (!user) return false;
+
+    return requiredRoles.includes(user.type);
   }
 }
