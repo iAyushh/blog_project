@@ -11,7 +11,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     @Inject(jwtConfigFactory.KEY)
     private readonly config: ConfigType<typeof jwtConfigFactory>,
   ) {
-    
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -19,11 +18,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     return {
-      id:payload.sub,
-      type:payload.type,
-
-    }
+      id: payload.sub,
+      type: payload.type,
+    };
   }
 }

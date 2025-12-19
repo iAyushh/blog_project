@@ -1,31 +1,28 @@
-import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { Strategy } from 'passport-local';
-import { ValidatedUser } from '@Common';
-import { LOCAL_AUTH } from '../auth.constants';
-import { UsersService } from '../../users';
-import { AdminService } from '../../admin';
+import { UnauthorizedException } from "@nestjs/common";
+import { PassportStrategy } from "@nestjs/passport";
+import { Strategy } from "passport-local";
+import { ValidatedUser } from "src/common/types";
+import { UsersService } from "src/users";
+import { AuthService } from "../auth.service";
 
-@Injectable()
-export class LocalStrategy extends PassportStrategy(Strategy, LOCAL_AUTH) {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly adminService: AdminService,
-  ) {
-    super({
-      usernameField: 'email',
-    });
-  }
 
-  async validate(email: string, password: string): Promise<ValidatedUser> {
-    let user: false | ValidatedUser | null;
-    user = await this.usersService.validateCredentials(email, password);
-    if (user === null) {
-      user = await this.adminService.validateCredentials(email, password);
+
+export class LocalStrategy extends PassportStrategy(Strategy){
+    constructor(private readonly userService: UsersService){
+        super({
+            usernameField:'email',
+            passwordField:'password'
+        }) 
     }
-    if (user) return user;
-    if (user === false) throw new UnauthorizedException('Incorrect password');
+    async validate(email:string, password: string): Promise <ValidatedUser> {
+      
+     const user = await this.userService.validateUserByEmail(email, password);
+     
+     if(!user){
+        throw new UnauthorizedException()
+     }
+     return user;
+     
+    }
 
-    throw new UnauthorizedException('User does not exist');
-  }
 }

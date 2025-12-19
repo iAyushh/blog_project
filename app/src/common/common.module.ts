@@ -1,23 +1,18 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import * as configs from '@Config';
-import { validateEnvironmentVariables } from './utils';
-import { StorageService, UtilsService } from './providers';
 import { JwtStrategy } from './strategies';
-
-const providers = [StorageService, UtilsService, JwtStrategy];
+import { jwtConfigFactory } from 'src/configs';
 
 @Global()
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      cache: true,
-      load: Object.values(configs),
-      validate: validateEnvironmentVariables,
+      load: [jwtConfigFactory]
+    
     }),
   ],
-  providers: providers,
-  exports: providers,
+  providers: [JwtStrategy],
+  exports: [JwtStrategy],
 })
 export class CommonModule {}

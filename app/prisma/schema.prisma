@@ -7,19 +7,26 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
-  // moduleFormat = "cjs"
+  moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-model Role {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
-  users User[]
+enum UserRole {
+  ADMIN  @map("admin")
+  AUTHOR @map("author")
+  READER @map("reader")
+}
 
-  @@map("role")
+model Admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("admin")
 }
 
 model User {
@@ -28,8 +35,7 @@ model User {
   firstname String?
   lastname  String?
 
-  roleId Int  @map("role_id")
-  role   Role @relation(fields: [roleId], references: [id])
+  role UserRole
 
   blogs Blog[]
 
